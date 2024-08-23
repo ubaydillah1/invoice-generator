@@ -1,49 +1,48 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable react/prop-types */
 import { useState } from "react";
 
+/* eslint-disable react/prop-types */
 const Square = ({ value, onClick }) => {
   return (
     <button
-      className="w-20 h-20 border-2 border-black font-bold text-3xl"
       onClick={onClick}
+      className="w-[60px] h-[60px] border-2 border-black text-3xl font-bold flex justify-center items-center"
     >
       {value}
     </button>
   );
 };
 
-const TicTacToeBoard = ({ isXNext, onPlay, squares }) => {
+const Board = ({ values, isXnext, onPlay }) => {
   const handleClick = (i) => {
-    if (squares[i] || calculateWinner(squares)) return;
+    if (values[i] || calculateWinner(values)) return;
 
-    const newSquares = squares.slice();
-    newSquares[i] = isXNext ? "X" : "O";
+    const nextValues = [...values];
+    nextValues[i] = isXnext ? "X" : "O";
 
-    onPlay(newSquares);
+    onPlay(nextValues);
   };
 
-  const winner = calculateWinner(squares);
-  const isBoardFull = squares.every((square) => square !== null);
+  const info = calculateWinner(values);
 
-  let turnMessage = "";
-  if (winner) {
-    turnMessage = `Winner: ${winner}`;
-  } else if (isBoardFull) {
-    turnMessage = "It's a draw!";
+  let description = "";
+
+  if (info) {
+    description = "Winner is " + info;
+  } else if (values.every((value) => value !== null)) {
+    description = "Draw";
   } else {
-    turnMessage = isXNext ? "X's Turn" : "O's Turn";
+    description = (isXnext ? "X" : "O") + "'s Turn";
   }
 
   return (
-    <div className="tic-tac-toe-page max-w-[240px] w-full m-auto mt-56">
-      <div className="turn-indicator text-center mb-4 text-xl font-bold">
-        {turnMessage}
-      </div>
-      <div className="board flex flex-wrap">
-        {squares.map((square, i) => (
-          <Square key={i} value={square} onClick={() => handleClick(i)} />
-        ))}
+    <div>
+      <div className="font-bold text-2xl my-3 text-center">{description}</div>
+      <div className="Board flex justify-center items-center flex-wrap mx-auto w-[180px]">
+        {values.map((value, i) => {
+          return (
+            <Square value={value} key={i} onClick={() => handleClick(i)} />
+          );
+        })}
       </div>
     </div>
   );
@@ -51,57 +50,50 @@ const TicTacToeBoard = ({ isXNext, onPlay, squares }) => {
 
 const TicTacToePage = () => {
   const [history, setHistory] = useState([Array(9).fill(null)]);
+  const [isXnext, setIsXNext] = useState(true);
   const [currentMove, setCurrentMove] = useState(0);
   const currentSquares = history[currentMove];
-  const [isXNext, setIsXNext] = useState(true);
 
-  const handlePlay = (nextSquares) => {
-    const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
-    setHistory(nextHistory);
-    setCurrentMove(nextHistory.length - 1);
-    setIsXNext(!isXNext);
-  };
-
-  const jumpTo = (nextMove) => {
+  function jumpTo(nextMove) {
     setCurrentMove(nextMove);
     setIsXNext(nextMove % 2 === 0);
-  };
+  }
+
+  function handlePlay(squares) {
+    const nextHistory = [...history.slice(0, currentMove + 1), squares];
+    setCurrentMove(nextHistory.length - 1);
+    setHistory(nextHistory);
+    setIsXNext(!isXnext);
+  }
 
   const moves = history.map((squares, move) => {
-    let description = "";
-
-    if (move > 0) {
-      description = "Go to move #" + move;
-    } else {
-      description = "Go to Game Start";
-    }
+    const desc = move ? "Go to move #" + move : "Go to game start";
 
     return (
       <li key={move}>
-        <button onClick={() => jumpTo(move)}>{description}</button>
+        <button
+          className="border bg-black text-white font-medium py-4 px-3 w-52 my-1 rounded-md shadow-lg"
+          onClick={() => jumpTo(move)}
+        >
+          {desc}
+        </button>
       </li>
     );
   });
 
   return (
-    <>
+    <div className="flex items-center justify-center mt-[200px] gap-10">
       <div>
-        <div>
-          <TicTacToeBoard
-            squares={currentSquares}
-            isXNext={isXNext}
-            onPlay={handlePlay}
-          />
-        </div>
-        <div>
-          <ol>{moves}</ol>
-        </div>
+        <Board values={currentSquares} isXnext={isXnext} onPlay={handlePlay} />
       </div>
-    </>
+      <div>
+        <ol>{moves}</ol>
+      </div>
+    </div>
   );
 };
 
-function calculateWinner(squares) {
+function calculateWinner(values) {
   const lines = [
     [0, 1, 2],
     [3, 4, 5],
@@ -115,11 +107,13 @@ function calculateWinner(squares) {
 
   for (let i = 0; i < lines.length; i++) {
     const [a, b, c] = lines[i];
-    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
+
+    if (values[a] && values[a] === values[b] && values[b] === values[c]) {
+      return values[a];
     }
   }
-  return null;
+
+  return false;
 }
 
 export default TicTacToePage;
