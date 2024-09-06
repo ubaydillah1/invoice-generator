@@ -5,6 +5,9 @@ import "./index.css";
 import TicTacToePage from "./pages/ticTacToe";
 import ProductsPage from "./pages/products";
 import Invoice from "./pages/invoice";
+import Coba from "./pages/coba";
+import { Provider } from "react-redux";
+import { store } from "./app/store";
 
 const router = createBrowserRouter([
   {
@@ -19,10 +22,16 @@ const router = createBrowserRouter([
     path: "/products",
     element: <ProductsPage />,
   },
+  {
+    path: "/coba",
+    element: <Coba />,
+  },
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <Provider store={store}>
+      <RouterProvider router={router} />
+    </Provider>
   </React.StrictMode>
 );
