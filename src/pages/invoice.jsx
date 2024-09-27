@@ -41,15 +41,15 @@ const defaultForm = {
   termsText: "Terms",
   terms: "",
   subTotalText: "Subtotal",
-  subTotal: null,
+  subTotal: "",
   discountText: "Discount",
-  discount: null,
-  amountDiscount: null,
+  discount: "",
+  amountDiscount: "",
   totalText: "Total",
-  total: null,
+  total: "",
   taxText: "Tax",
-  tax: null,
-  amountTax: null,
+  tax: "",
+  amountTax: "",
   shippingText: "Shipping",
   shipping: "",
   amountPaidText: "Amount Paid",
@@ -107,7 +107,7 @@ const Invoice = () => {
         };
       };
 
-      reader.readAsDataURL(file); // Baca file sebagai base64
+      reader.readAsDataURL(file);
     }
   };
 
@@ -355,7 +355,12 @@ const Invoice = () => {
       doc.roundedRect(300, 186, 270, 20, 4, 4, "F");
 
       doc.text(invoiceForm.balanceDueText, 450, 200, "right");
-      doc.text(invoiceForm.balanceDue, 560, 200, "right");
+      doc.text(
+        selectedCurrency + formatter.format(invoiceForm.balanceDue),
+        560,
+        200,
+        "right"
+      );
 
       // Bill To / Ship To
       doc.text(invoiceForm.from, 40, 143);
@@ -363,8 +368,8 @@ const Invoice = () => {
       doc.text(invoiceForm.billToText, 40, 170);
       doc.text(invoiceForm.to, 40, 187);
 
-      doc.text(invoiceForm.shipToText, 120, 170);
-      doc.text(invoiceForm.shipTo, 120, 187);
+      doc.text(invoiceForm.shipToText, 170, 170);
+      doc.text(invoiceForm.shipTo, 170, 187);
 
       const tableHeaders = [
         { header: invoiceForm.itemText, dataKey: "item" },
@@ -446,17 +451,11 @@ const Invoice = () => {
       const increment = 20;
 
       labels.forEach((label) => {
-        if (
-          label.value !== "" &&
-          label.text &&
-          label.value !== null &&
-          label.value
-        ) {
-          console.log(label.text);
+        if (label.value !== "" && label.text && label.value !== null) {
           doc.text(label.text, 450, currentPosition, "right");
           doc.setTextColor(0, 0, 0);
           doc.text(
-            `${selectedCurrency} ${label.value}`,
+            `${selectedCurrency} ${formatter.format(label.value)}`,
             560,
             currentPosition,
             "right"
@@ -466,6 +465,7 @@ const Invoice = () => {
         }
       });
 
+      doc.setTextColor(0, 0, 0);
       doc.text(invoiceForm.notes, 40, yPosition + 155);
       doc.text(invoiceForm.terms, 40, yPosition + 205);
 
@@ -582,8 +582,8 @@ const Invoice = () => {
       subTotal: isNaN(newSubTotal) ? "0.00" : newSubTotal.toFixed(2),
       total: isNaN(shippingTotal) ? "0.00" : shippingTotal.toFixed(2),
       balanceDue: isNaN(newBalanceDue) ? "0.00" : newBalanceDue.toFixed(2),
-      amountTax: isNaN(amountTax) ? null : amountTax.toFixed(2),
-      amountDiscount: isNaN(amountDiscount) ? null : amountDiscount.toFixed(2),
+      amountTax: amountTax === 0 ? null : amountTax.toFixed(2),
+      amountDiscount: amountDiscount === 0 ? null : amountDiscount.toFixed(2),
     }));
   }, [
     invoiceForm.shipping,
@@ -691,7 +691,7 @@ const Invoice = () => {
                 <textarea
                   ref={toRef}
                   name="to"
-                  placeholder="who is this from?"
+                  placeholder="who is this to?"
                   value={invoiceForm.to}
                   onChange={handleChange}
                   className="no-resize border border-slate-300 px-5 py-2 outline-none my-1 rounded-md focus:shadow-neu focus:border-slate-300 overflow-hidden w-full"
